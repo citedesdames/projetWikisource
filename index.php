@@ -125,6 +125,11 @@
 // Connexion à la base de données
 include("connexion.php");
 
+$url = "https://fr.wikisource.org/w/index.php?title=Page:Pascal_-_L%E2%80%99Endymion,_1657.pdf/";
+$table = "wikisourceEndymion";
+$decalage = 14;
+$pageDebut = 1;
+$pageFin = 72;
     
 $nom = "";
 if(isset($_POST["nom"])){
@@ -133,13 +138,13 @@ if(isset($_POST["nom"])){
    if(strlen($nom)<3){
       echo ('<p style="background-color:#FFBBBB;">Votre choix de la <a href="#nom'.$i.'">page '.$i.'</a> n’a pas été enregistré, avez-vous oublié d’écrire votre nom ?</p>');   
    } else {
-      $sql = "SELECT * FROM wikisource2020 WHERE `nom`='".$nom."'";
+      $sql = "SELECT * FROM '.$table.' WHERE `nom`='".$nom."'";
       $req = $link -> prepare($sql);
       $req -> execute();
       //if($req -> rowCount() > 1){
       //   echo ('<p style="background-color:#FFBBBB;">Vous avez déjà choisi 2 pages à relire ! Merci d’attendre le 19 décembre pour en relire d’autres.</p>');   
       //} else {
-         $sql = 'INSERT INTO wikisource2020 (id, nom, ip) VALUES (:id, :nom, :ip)';
+         $sql = 'INSERT INTO '.$table.' (id, nom, ip) VALUES (:id, :nom, :ip)';
          // On prépare la requête avant l'envoi :
          $req = $link -> prepare($sql);
          $req->bindValue(':id', $_POST['id'], PDO::PARAM_STR);
@@ -148,36 +153,37 @@ if(isset($_POST["nom"])){
          // On envoie la requête :
          $req -> execute();
          echo ('<p style="background-color:lime;">Merci d’avoir choisi la page '.$i.' ! 
-         <a href="https://fr.wikisource.org/w/index.php?title=Page:Ferrandi%C3%A8re_-_%C5%92uvres,_1816.pdf/'.($i+8).'&action=edit">Cliquez ici</a> pour commencer à la corriger !</p>');
+         <a href="'.$url.($i+$decalage).'&action=edit">Cliquez ici</a> pour commencer à la corriger !</p>');
       //}
    }
 }
 ?>
 
-<h1>Projet Wikisource 2020-2021 : <br>Les <i>Fables</i> de Marie-Amable Petiteau</h1>
+<h1>Projet Wikisource sur <i>L’Endymion</i> de Françoise Pascal</h1>
 <p>
-Pourriez-vous indiquer ci-dessous <b>VOTRE NOM EN MAJUSCULES</b> suivi d’un espace suivi de <b>votre prénom</b> dans les deux cadres de texte correspondant aux pages sur lesquelles vous avez choisi de travailler ?
-</p>
-<p>
-Jusqu'au 18 décembre, on vous demande de <b>ne pas choisir plus de deux pages</b>, pour que tout le monde puisse travailler sur ce recueil. Si vous voulez contribuer davantage à la relecture de ce recueil, vous pouvez :<br>
-- jusqu'au 18 décembre, faire une deuxième relecture pour passer « en vert » les pages qui apparaissent « en jaune », ou relire les poésies du second volume<br>
-- après le 18 décembre, relire toutes les pages que vous souhaitez !
+Pourriez-vous indiquer ci-dessous <b>VOTRE NOM EN MAJUSCULES</b> suivi d’un espace suivi de <b>votre prénom</b> dans le cadre de texte correspondant à chaque page sur laquelle vous avez choisi de travailler, juste avant de commencer à la modifier ?
 </p>
 <?php 
-$req = $link->prepare("SELECT id FROM wikisource2020");
+
+
+$req = $link->prepare("SELECT id, nom FROM ".$table);
 $req -> execute();
 /* Récupération de toutes les valeurs de la première colonne */
 $allPages = $req -> fetchAll(PDO::FETCH_COLUMN, 0);
+$req = $link->prepare("SELECT id, nom FROM ".$table);
+$req -> execute();
+$allPagesAllInfos = $req -> fetchAll();
 
-$i = 5;
-while($i < 184){
+$i = $pageDebut;
+while($i < $pageFin){
   if(in_array("".$i, $allPages)){
-     echo '  <div class="page"><p><a href="https://fr.wikisource.org/wiki/Page:Ferrandi%C3%A8re_-_%C5%92uvres,_1816.pdf/'.($i+8).'">Page '.$i.'</a> déjà choisie !</p></div>';
+     var_dump($allPagesAllInfos);
+     echo '  <div class="page" title="Page choisie par '.$allPagesAllInfos["".$i]["nom"].'"><p><a href="'.$url.($i+$decalage).'">Page '.$i.'</a> déjà choisie !</p></div>';
   } else {
      echo '
   <div class="page">
   <form action="index.php" method="POST"> 
-  <p><a href="https://fr.wikisource.org/w/index.php?title=Page:Ferrandi%C3%A8re_-_%C5%92uvres,_1816.pdf/'.($i+8).'&action=edit">Page '.$i.'</a> :</p>
+  <p><a href="'.$url.($i+$decalage).'&action=edit">Page '.$i.'</a> :</p>
   <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
     <label class="mdl-textfield__label" for="nom'.$i.'" value="">NOM Prénom
     </label>
@@ -196,10 +202,9 @@ while($i < 184){
   
 </form>
 <!--
-    Projet Wikisource, v1.0, 2020-12-04
+    Projet Wikisource, v1.1, 2021-05-03
     Choix de page Wikisource à transcrire
-    Copyright (C) 2020 - Philippe Gambette
-
+    Copyright (C) 2020-2021 - Philippe Gambette
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
@@ -213,6 +218,7 @@ while($i < 184){
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 -->
 <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 <SCRIPT TYPE="text/javascript" SRC="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></SCRIPT>
@@ -229,4 +235,5 @@ $("#nom").on("keyup",function(){
    $("#nom2").val($("#nom").val());
 })
 </script>
+</body>
 </html>
