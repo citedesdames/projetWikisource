@@ -2,7 +2,7 @@
 <html lang="fr">
 
 <head>
-    <title>Projet Wikisource</title>
+    <title>Projet Wikisource sur l'Heptaméron des nouvelles</title>
     <meta name="Description" content="Projet Wikisource">
     <!-- <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> -->
     <meta charset="UTF-8">
@@ -33,7 +33,8 @@
         body {
             font-family: calibri, verdana;
             padding: 20px;
-            margin: 0;
+            margin: 0px;
+            width: auto;
         }
         .motif-list-control {
             width: 300px;
@@ -116,20 +117,37 @@
           padding: 10px;
           margin: 10px;
         }
+        .pageRelue{
+          background-color: #FFDDDD;
+          font-size: 0.6em
+        }
     </style>
 </head>
-
 <body>
 <?php
+
+function pageLabel($i){
+global $pageDebut;
+         $numPage = floor(($i-$pageDebut)/2);
+         if($numPage>192){
+            $numPage += 2;
+         }
+         if(($i-$pageDebut)%2==0){
+            $numPage .= "r";
+         } else {
+            $numPage .= "v";
+         }
+   return $numPage;
+}
+
 
 // Connexion à la base de données
 include("connexion.php");
 
-$url = "https://fr.wikisource.org/w/index.php?title=Page:Pascal_-_L%E2%80%99Endymion,_1657.pdf/";
-$table = "wikisourceEndymion";
-$decalage = 14;
-$pageDebut = 1;
-$pageFin = 72;
+$url = "https://fr.wikisource.org/w/index.php?title=Page:Marguerite_de_Navarre_-_L%27heptam%C3%A9ron_des_nouvelles,_1559.pdf/";
+$table = "wikisourceHeptameron";
+$pageDebut = 17;
+$pageFin = 439;
     
 $nom = "";
 if(isset($_POST["nom"])){
@@ -152,45 +170,44 @@ if(isset($_POST["nom"])){
          $req->bindValue(':ip', $_SERVER['REMOTE_ADDR'], PDO::PARAM_STR);
          // On envoie la requête :
          $req -> execute();
-         echo ('<p style="background-color:lime;">Merci d’avoir choisi la page '.$i.' ! 
-         <a href="'.$url.($i+$decalage).'&action=edit">Cliquez ici</a> pour commencer à la corriger !</p>');
+         echo ('<p style="background-color:lime;">Merci d’avoir choisi la page '.pageLabel($i).' ! 
+         <a href="'.$url.($i).'&action=edit">Cliquez ici</a> pour commencer à la corriger !</p>');
       //}
    }
 }
 ?>
 
-<h1>Projet Wikisource sur <i>L’Endymion</i> de Françoise Pascal</h1>
+<h1>Projet Wikisource sur l’<i>Heptaméron des nouvelles</i> de Marguerite de Navarre</h1>
 <p>
 Pourriez-vous indiquer ci-dessous <b>VOTRE NOM EN MAJUSCULES</b> suivi d’un espace suivi de <b>votre prénom</b> dans le cadre de texte correspondant à chaque page sur laquelle vous avez choisi de travailler, juste avant de commencer à la modifier ?
 </p>
-<?php 
-
-
-$req = $link->prepare("SELECT id, nom FROM ".$table);
+<p id="dejaRelu"></p>
+<?php
+$req = $link->prepare("SELECT id FROM ".$table);
 $req -> execute();
 /* Récupération de toutes les valeurs de la première colonne */
 $allPages = $req -> fetchAll(PDO::FETCH_COLUMN, 0);
-$req = $link->prepare("SELECT id, nom FROM ".$table);
-$req -> execute();
-$allPagesAllInfos = $req -> fetchAll();
 
-$i = $pageDebut;
+$i = $pageDebut+2;
+$pagesRelues = 0;
+$pages = 0;
 while($i < $pageFin){
+  $pages++;
   if(in_array("".$i, $allPages)){
-     var_dump($allPagesAllInfos);
-     echo '  <div class="page" title="Page choisie par '.$allPagesAllInfos["".$i]["nom"].'"><p><a href="'.$url.($i+$decalage).'">Page '.$i.'</a> déjà choisie !</p></div>';
+     $pagesRelues++;
+     echo '  <div class="page pageRelue"><p><a href="'.$url.$i.'">Page '.pageLabel($i).'</a> déjà choisie !</p></div>';
   } else {
      echo '
   <div class="page">
   <form action="index.php" method="POST"> 
-  <p><a href="'.$url.($i+$decalage).'&action=edit">Page '.$i.'</a> :</p>
+  <p><a href="'.$url.$i.'&action=edit">Page '.pageLabel($i).'</a> :</p>
   <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
     <label class="mdl-textfield__label" for="nom'.$i.'" value="">NOM Prénom
     </label>
     <input class="mdl-textfield__input" type="text" name="nom" id="nom'.$i.'">
   </div>
   <input type="hidden" name="id" value="'.$i.'"><br>
-  <input type="submit" class="mdl-button mdl-js-button mdl-button--raised" value="Choisir la page '.$i.' !">
+  <input type="submit" class="mdl-button mdl-js-button mdl-button--raised" value="Choisir la page '.pageLabel($i).' !">
   </form>
   </div>
   ';
@@ -198,13 +215,16 @@ while($i < $pageFin){
   }
   $i ++;
 }
+
+echo '
+<script>document.querySelector("#dejaRelu").innerHTML = "'.$pagesRelues.' pages déjà relues sur '.$pages.' ('.round($pagesRelues/$pages*100,2).' %)."</script>';
 ?>
   
 </form>
 <!--
-    Projet Wikisource, v1.1, 2021-05-03
+    Projet Wikisource, v1.2, 2022-09-30
     Choix de page Wikisource à transcrire
-    Copyright (C) 2020-2021 - Philippe Gambette
+    Copyright (C) 2020-2022 - Philippe Gambette
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
@@ -235,5 +255,6 @@ $("#nom").on("keyup",function(){
    $("#nom2").val($("#nom").val());
 })
 </script>
+<p>Votre nom et votre adresse IP seront conservées pendant 5 ans avant suppression, contactez Philippe Gambette à l'adresse philippe.gambette@univ-eiffel.fr pour exercer votre droit d'accès et de rectification aux données à caractère personnel</p>
 </body>
 </html>
