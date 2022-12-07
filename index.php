@@ -255,6 +255,8 @@ $("#nom").on("keyup",function(){
    $("#nom2").val($("#nom").val());
 })
 </script>
-<p>Votre nom et votre adresse IP seront conservées pendant 5 ans avant suppression, contactez Philippe Gambette à l'adresse philippe.gambette@univ-eiffel.fr pour exercer votre droit d'accès et de rectification aux données à caractère personnel</p>
+<footer>
+<p>Votre adresse IP et votre nom seront conservés pendant 5 ans avant suppression, contactez Philippe Gambette à l'adresse philippe.gambette@univ-eiffel.fr pour exercer votre droit d'accès et de rectification aux données à caractère personnel</p>
+</footer>
 </body>
 </html>
